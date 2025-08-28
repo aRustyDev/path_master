@@ -6,3 +6,6 @@ run:
 
 clean:
     @rm -rf ./target
+
+install:
+    @cargo install --path .
