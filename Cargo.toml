@@ -1,0 +1,29 @@
+[package]
+name = "path_master"
+version = "0.1.0"
+edition = "2024"
+description = "A rewrite of the macOS /usr/libexec/path_helper utility. Meant to be installed and explicitly run from .zprofile or .zshrc"
+documentation = "https://docs.rs/path_master"
+repository = "https://github.com/aRustyDev/path_master"
+license = "AGPL-3.0-or-later"
+keywords = ["dotfile", "homedir", "macos", "path", "path_helper"]
+categories = ["command-line-utilities"]
+build = "build.rs"
+exclude = ["/ci"]
+publish = false  # ["some-registry-name"]
+# include = ["!/examples/big_example", "/examples", "/src", "COPYRIGHT"]
+
+[dependencies]
+clap = { version = "4.5.46", features = ["derive"] }
+clap_complete = "4.5.57"
+glob = "0.3.3"
+# infer = "0.19.0"
+regex = "1.11.2"
+shadow-rs = { version = "1.2.1", default-features = false }
+# tree_magic = "0.2.3"
+# walkdir = "2.5.0"
+
+[build-dependencies]
+clap = { version = "4.5.46", features = ["derive"] }
+clap_mangen = "0.2.29"
+shadow-rs = { version = "1.2.1" }
