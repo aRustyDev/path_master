@@ -8,35 +8,6 @@
 
 version: 2
 report_sizes: true
-# binary_signs:
-#   - cmd: cosign
-#     stdin: "{{ .Env.COSIGN_PWD }}"
-#     args:
-#       - "sign-blob"
-#       - "--key=cosign.key"
-#       - "--output-signature=${signature}"
-#       - "${artifact}"
-#       - "--yes" # needed on cosign 2.0.0+
-#   - id: foo
-#     signature: "${artifact}_sig"
-#     cmd: gpg2
-#     artifacts: binary
-#     args: ["--output", "${signature}", "${artifact}", "{{ .ProjectName }}"]
-#     ids:
-#       - foo
-#       - bar
-
-# signs:
-#   - artifacts: checksum
-#   - cmd: cosign
-#     stdin: "{{ .Env.COSIGN_PWD }}"
-#     args:
-#       - "sign-blob"
-#       - "--key=cosign.key"
-#       - "--output-signature=${signature}"
-#       - "${artifact}"
-#       - "--yes" # needed on cosign 2.0.0+
-#     artifacts: all
 
 before:
   hooks:
@@ -45,9 +16,41 @@ before:
     - rustup default stable
     - cargo install --locked cargo-zigbuild
     - cargo fetch --locked
-    - git add .goreleaser.yaml
-    - git commit --amend -S --no-edit
-    - git tag -a v1.0.0 main
+    - op inject -i assets/cosign.tpl -o assets/cosign.key
+
+binary_signs:
+  - cmd: cosign
+    id: cosign
+    stdin: "{{ .Env.COSIGN_PWD }}"
+    args:
+      - "sign-blob"
+      - "--key=assets/cosign.key"
+      - "--output-signature=${signature}"
+      - "${artifact}"
+      - "--yes" # needed on cosign 2.0.0+
+  - id: gpg
+    cmd: gpg
+    env:
+      - GPG_TTY="$(tty)"
+      # - GPG_PASSWORD="{{ .Env.GPG_PASSWORD }}"
+
+signs:
+  - id: gpg
+    cmd: gpg
+    stdin: "{{ .Env.GPG_PASSWORD }}"
+    env:
+      - GPG_TTY="$(tty)"
+    artifacts: all
+  - cmd: cosign
+    id: cosign
+    stdin: "{{ .Env.COSIGN_PWD }}"
+    args:
+      - "sign-blob"
+      - "--key=assets/cosign.key"
+      - "--output-signature=${signature}"
+      - "${artifact}"
+      - "--yes" # needed on cosign 2.0.0+
+    artifacts: all
 
 builds:
   - builder: rust

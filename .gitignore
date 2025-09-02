@@ -30,3 +30,4 @@ target
 dist/
 .intentionally-empty-file.o
 target/
+assets/cosign.key
