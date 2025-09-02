@@ -28,18 +28,39 @@ binary_signs:
       - "--output-signature=${signature}"
       - "${artifact}"
       - "--yes" # needed on cosign 2.0.0+
+  # - {}
   - id: gpg
     cmd: gpg
-    env:
-      - GPG_TTY="$(tty)"
-      # - GPG_PASSWORD="{{ .Env.GPG_PASSWORD }}"
+    signature: "${artifact}_sig"
+    output: true
+    args: [
+        "--batch", # Essential for non-interactive signing.
+        "--yes", # Assumes 'yes' to any prompts.
+        "-u", # Specifies the GPG key to use.
+        "{{ .Env.GPG_FFINGERPRINT }}",
+        "--output",
+        "${signature}",
+        "--detach-sign",
+        "${artifact}",
+      ]
+    stdin: "{{ .Env.GPG_PASSWORD }}"
 
 signs:
   - id: gpg
     cmd: gpg
+    signature: "${artifact}_sig"
+    output: true
+    args: [
+        "--batch", # Essential for non-interactive signing.
+        "--yes", # Assumes 'yes' to any prompts.
+        "-u", # Specifies the GPG key to use.
+        "{{ .Env.GPG_FFINGERPRINT }}",
+        "--output",
+        "${signature}",
+        "--detach-sign",
+        "${artifact}",
+      ]
     stdin: "{{ .Env.GPG_PASSWORD }}"
-    env:
-      - GPG_TTY="$(tty)"
     artifacts: all
   - cmd: cosign
     id: cosign
@@ -64,7 +85,7 @@ builds:
     targets:
       - x86_64-unknown-linux-gnu
       - x86_64-apple-darwin
-      # - x86_64-pc-windows-gnu
+      - x86_64-pc-windows-gnu
       - aarch64-unknown-linux-gnu
       - aarch64-apple-darwin
 
@@ -158,6 +179,7 @@ builds:
 
 changelog:
   sort: asc
+  use: github
   filters:
     exclude:
       - "^docs:"
