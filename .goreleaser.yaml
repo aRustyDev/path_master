@@ -49,8 +49,8 @@ before:
 builds:
   - builder: rust
     id: path_master
-    tool: cargo # [cargo, cross, zigbuild]
-    command: zigbuild
+    # tool: cargo # [cargo, cross, zigbuild]
+    # command: zigbuild
     binary: path_master
     env: []
     flags:
