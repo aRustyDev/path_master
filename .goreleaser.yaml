@@ -8,23 +8,23 @@
 
 version: 2
 report_sizes: true
-binary_signs:
-  - cmd: cosign
-    stdin: "{{ .Env.COSIGN_PWD }}"
-    args:
-      - "sign-blob"
-      - "--key=cosign.key"
-      - "--output-signature=${signature}"
-      - "${artifact}"
-      - "--yes" # needed on cosign 2.0.0+
-  - id: foo
-    signature: "${artifact}_sig"
-    cmd: gpg2
-    artifacts: binary
-    args: ["--output", "${signature}", "${artifact}", "{{ .ProjectName }}"]
-    ids:
-      - foo
-      - bar
+# binary_signs:
+#   - cmd: cosign
+#     stdin: "{{ .Env.COSIGN_PWD }}"
+#     args:
+#       - "sign-blob"
+#       - "--key=cosign.key"
+#       - "--output-signature=${signature}"
+#       - "${artifact}"
+#       - "--yes" # needed on cosign 2.0.0+
+#   - id: foo
+#     signature: "${artifact}_sig"
+#     cmd: gpg2
+#     artifacts: binary
+#     args: ["--output", "${signature}", "${artifact}", "{{ .ProjectName }}"]
+#     ids:
+#       - foo
+#       - bar
 
 # signs:
 #   - artifacts: checksum
