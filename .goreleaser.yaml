@@ -50,7 +50,7 @@ builds:
   - builder: rust
     id: path_master
     tool: cargo # [cargo, cross, zigbuild]
-    command: build
+    command: zigbuild
     binary: path_master
     env: []
     flags:
