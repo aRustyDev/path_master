@@ -45,6 +45,9 @@ before:
     - rustup default stable
     - cargo install --locked cargo-zigbuild
     - cargo fetch --locked
+    - git add .goreleaser.yaml
+    - git commit --amend -S --no-edit
+    - git tag -a v1.0.0 main
 
 builds:
   - builder: rust
