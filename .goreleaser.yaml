@@ -1,0 +1,165 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+report_sizes: true
+binary_signs:
+  - cmd: cosign
+    stdin: "{{ .Env.COSIGN_PWD }}"
+    args:
+      - "sign-blob"
+      - "--key=cosign.key"
+      - "--output-signature=${signature}"
+      - "${artifact}"
+      - "--yes" # needed on cosign 2.0.0+
+  - id: foo
+    signature: "${artifact}_sig"
+    cmd: gpg2
+    artifacts: binary
+    args: ["--output", "${signature}", "${artifact}", "{{ .ProjectName }}"]
+    ids:
+      - foo
+      - bar
+
+# signs:
+#   - artifacts: checksum
+#   - cmd: cosign
+#     stdin: "{{ .Env.COSIGN_PWD }}"
+#     args:
+#       - "sign-blob"
+#       - "--key=cosign.key"
+#       - "--output-signature=${signature}"
+#       - "${artifact}"
+#       - "--yes" # needed on cosign 2.0.0+
+#     artifacts: all
+
+before:
+  hooks:
+    # if you don't do these things before calling goreleaser, it might be a
+    # good idea to do them here:
+    - rustup default stable
+    - cargo install --locked cargo-zigbuild
+    - cargo fetch --locked
+
+builds:
+  - builder: rust
+    id: path_master
+    tool: cargo # [cargo, cross, zigbuild]
+    command: build
+    binary: path_master
+    env: []
+    flags:
+      - --release
+    targets:
+      - x86_64-unknown-linux-gnu
+      - x86_64-apple-darwin
+      # - x86_64-pc-windows-gnu
+      - aarch64-unknown-linux-gnu
+      - aarch64-apple-darwin
+
+# archives:
+#   - formats: [tar.gz]
+#     # this name template makes the OS and Arch compatible with the results of `uname`.
+#     name_template: >-
+#       {{ .ProjectName }}_
+#       {{- title .Os }}_
+#       {{- if eq .Arch "amd64" }}x86_64
+#       {{- else if eq .Arch "386" }}i386
+#       {{- else }}{{ .Arch }}{{ end }}
+#     # use zip for windows archives
+#     format_overrides:
+#       - goos: windows
+#         formats: [zip]
+
+# checksum:
+#   name_template: "{{ .ProjectName }}_checksums.txt"
+#   algorithm: sha256
+#   split: true
+#   # IDs of artifacts to include in the checksums file.
+#   ids:
+#     - foo
+#     - bar
+#   # Disable the generation/upload of the checksum file.
+#   disable: true
+
+# nfpms:
+#   - id: foo
+#     package_name: path_master
+#     vendor: Dark Hunt Labs LLC.
+#     homepage: https://example.com/
+#     maintainer: Drummer <drum-roll@example.com>
+#     description: |-
+#       Drum rolls installer package.
+#       Software to create fast and easy drum rolls.
+#     license: Apache 2.0
+#     changelog: ./foo.yml
+#     formats:
+#       - apk
+#       - deb
+#       - rpm
+#       - termux.deb
+#       - archlinux
+#     # Packages your package depends on
+#     dependencies:
+#       - git
+#       - zsh
+#     umask: 0o002
+#     bindir: /usr/bin
+#     # Packages it provides
+#     provides: []
+#     # Packages your package recommends installing
+#     recommends: []
+#     # Packages your package suggests installing.
+#     suggests: []
+#     # Packages that conflict with your package
+#     conflicts: []
+#     # Packages it replaces
+#     replaces: []
+#     rpm:
+#       summary: Explicit Summary for Sample Package
+#       compression: gzip
+#       prefixes:
+#         - /usr/bin
+#       signature:
+#         key_file: "{{ .Env.GPG_KEY_PATH }}"
+#     deb:
+#       signature:
+#         key_file: "{{ .Env.GPG_KEY_PATH }}"
+#         type: origin
+#     apk:
+#       signature:
+#         key_file: "{{ .Env.GPG_KEY_PATH }}"
+#         key_name: origin
+#     archlinux:
+#       pkgbase: foo
+
+# sboms:
+#   - id: foo
+#     cmd: syft
+#     disable: true
+#     artifacts: any
+#     args: ["$artifact", "--output", "cyclonedx-json=$document"]
+#     env:
+#       - FOO=bar
+#       - HONK=honkhonk
+#     documents:
+#       - "${artifact}.spdx.json"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+release:
+  footer: >-
+
+    ---
+
+    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
